@@ -1,0 +1,29 @@
+@charset "utf-8";
+/* CSS Document */
+
+.main-wrapper {
+    width: 960px;
+    height: 600px;
+    background: red;
+    margin: 0 auto;
+}
+/*.game-wrapper {*/
+    /*width: 1002px;*/
+    /*height: 600px;*/
+    /*background: blue;*/
+    /*margin: 0 auto;*/
+    /*position: relative;*/
+/*}*/
+/*.space-ship {*/
+    /*width: 90px;*/
+    /*height: 90px;*/
+    /*background: url(../images/ship.png) top left no-repeat;*/
+    /*position: absolute;*/
+    /*-moz-transform: rotate(45deg);*/
+    /*-o-transform: rotate(45deg);*/
+    /*-webkit-transform: rotate(45deg);*/
+    /*transform: rotate(45deg);*/
+    /*filter: FlipH;*/
+    /*-ms-filter: "FlipH";*/
+
+/*}*/
