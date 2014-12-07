@@ -2,34 +2,43 @@
 
 function AsteroidGame() {
     var gameWrapper;
-    var keyLeft = 37;
-    var keyRight = 39;
-    var keyUp = 38;
+
+    var keys = {
+        left : 37,
+        right : 39,
+        up : 38,
+        space : 32,
+    }
 
     var spaceEl;            // element representing space for the spaceship and asteroid
-    var spaceWidth = 800;
+    var spaceWidth = 900;
     var spaceHeight = 600;
-    var shipInitAngle = 270;
     var spaceCenter;
 
     var shipEl;
     var ship;
-    var shipWidth = 90;
-    var shipHeight = 90;
-    var shipAngle;
-
-    var helper;             // to hold the helper class instance
-
-    var that = this;
+    var shipWidth = 70;
+    var shipHeight = 70;
+    var shipInitAngle = 270;
 
     var images = {
         ship: 'ship.png',
-        space: '',
+        space: 'space.png',
         asteroids: '',
-        bullet: '',
+        bullet: 'bullet.png',
     };
 
-    // tracks the pressed keys to allow multiple key presses to work together
+    var bulletProperties = {
+        width: 10,
+        height: 10,
+        life: 40,
+        image : images.bullet
+    };
+
+    var helper;             // to hold the helper class instance
+    var that = this;
+
+    // object to track the pressed keys to allow multiple key presses to work together
     // which is required for the forward movement and rotation to work together
     var pressedKeys = {
         pressedKeyCodes: [],
@@ -41,7 +50,7 @@ function AsteroidGame() {
         },
         removeKey: function (keyCode) {
 
-            delete this.pressedKeyCodes[this.pressedKeyCodes.indexOf(keyCode)];
+            this.pressedKeyCodes.splice(this.pressedKeyCodes.indexOf(keyCode),1)
 
         },
         isPressed: function (keyCode) {
@@ -60,54 +69,116 @@ function AsteroidGame() {
     this.init = function (mainWrapper, wrapperWidth, wrapperHeight) {
 
         gameWrapper = mainWrapper;
-        gameWrapper.style.width = wrapperWidth;
-        gameWrapper.style.height = wrapperHeight;
-        gameWrapper.style.position = 'relative';
-        gameWrapper.style.margin = "0 auto";
+        setWrapperProperties(wrapperWidth, wrapperHeight);
 
         helper = new Helper();
+
         createSpace();
-        spaceCenter = helper.getCenter({ width: spaceWidth, height: spaceHeight});
 
         createShip();
         ship.showShipInfo();
 
-        document.addEventListener("keydown", keydownEventHandler);
-        document.addEventListener("keyup", keyupEventHandler);
+        // register Event listeners
+        document.addEventListener('keydown', keydownEventHandler);
+        document.addEventListener('keyup', keyupEventHandler);
+        setInterval(gameloop,20)
 
     };
 
+    var setWrapperProperties = function(width, height) {
+
+        gameWrapper.style.width = width;
+        gameWrapper.style.height = height;
+        gameWrapper.style.position = 'relative';
+        gameWrapper.style.margin = '0 auto';
+
+    };
     var createSpace = function () {
+
         spaceEl = document.createElement('div');
-        spaceEl.style.width = spaceWidth + "px";
-        spaceEl.style.height = spaceHeight + "px";
-        spaceEl.style.background = "gray";
-        spaceEl.style.position = "relative";
+        spaceEl.style.width = spaceWidth + 'px';
+        spaceEl.style.height = spaceHeight + 'px';
+        spaceEl.style.background = 'url(images/' + images.space + ')';
+        spaceEl.style.position = 'relative';
         gameWrapper.appendChild(spaceEl);
+
+        spaceCenter = helper.getCenter({ width: spaceWidth, height: spaceHeight});
     };
 
     var createShip = function () {
+
         shipEl = document.createElement('div');
-        shipEl.style.width = shipWidth + "px";
-        shipEl.style.height = shipHeight + "px";
-        shipEl.style.position = "absolute";
+        shipEl.style.width = shipWidth + 'px';
+        shipEl.style.height = shipHeight + 'px';
+        shipEl.style.position = 'absolute';
         shipEl.style.background = 'url(images/' + images.ship + ')';
         spaceEl.appendChild(shipEl);
+
         ship = new Ship();
         ship.init(shipEl, shipWidth, shipHeight, spaceCenter, 0, shipInitAngle, helper);
+
+    };
+
+    var gameloop = function() {
+        if (pressedKeys.isPressed(keys.left)) {
+
+            ship.rotateShip(false);     // rotate ship in counter clockwise direction
+
+        }
+        if (pressedKeys.isPressed(keys.right)) {
+
+            ship.rotateShip(true);      // rotate ship in clockwise direction
+
+        }
+        if (pressedKeys.isPressed(keys.up)) {
+            ship.moveForward();
+        }
+
+        if (pressedKeys.isPressed(keys.space)) {
+            var bullet = new Bullet();
+            ship.fireBullet(bullet, bulletProperties);
+            console.log('space pressed',pressedKeys.pressedKeyCodes);
+
+            helper.createAndAppendElement(bullet, spaceEl, images.bullet);
+            helper.placeElement(bullet);
+
+            // remove the keySpace from pressed keys here instead relying in keyup handler since keyup
+            // handler may run after multiple passes of gameloop resulting in multiple bullet creation
+            // for a single Space bar press.
+            pressedKeys.removeKey(keys.space);
+
+        }
+
+        for(var i = 0;i < ship.firedBulletsInSpace.length;i++) {
+
+            var currBullet = ship.firedBulletsInSpace[i];
+            if(currBullet) {
+                if (currBullet.age < currBullet.life) {
+
+                    currBullet.moveForward();
+
+                } else {
+
+                    helper.removeElement(currBullet, spaceEl);
+                    delete ship.firedBulletsInSpace[i];
+
+                }
+            }
+        }
     };
 
     var keyupEventHandler = function (event) {
 
-        console.log("inside keyupEventHandler");
-        pressedKeys.removeKey(event.keyCode);
-
+        console.log('inside keyupEventHandler',event.keyCode);
+        // do not remove if key is space since gameloop is handling the removal
+        if(event.keyCode != keys.space) {
+            pressedKeys.removeKey(event.keyCode);
+        }
     };
 
     var keydownEventHandler = function (event) {
 
-        var timers = {};
-        console.log("inside keydownEventHandler");
+        console.log('inside keydownEventHandler');
         var keyPressed = event.keyCode;
         console.log(pressedKeys.pressedKeyCodes);
 
@@ -115,19 +186,6 @@ function AsteroidGame() {
 
             pressedKeys.addKey(keyPressed);
 
-        }
-        if (pressedKeys.isPressed(keyLeft)) {
-
-            ship.rotateShip(false);     // rotate ship in counter clockwise direction
-
-        }
-        if (pressedKeys.isPressed(keyRight)) {
-
-            ship.rotateShip(true);      // rotate ship in clockwise direction
-
-        }
-        if (pressedKeys.isPressed(keyUp)) {
-            ship.moveForward();
         }
     };
 }
@@ -137,4 +195,4 @@ var gameWrapper = document.createElement('div');
 mainWrapper[0].appendChild(gameWrapper);
 
 var game = new AsteroidGame();
-game.init(gameWrapper, 700, 600);
+game.init(gameWrapper, 900, 600);
