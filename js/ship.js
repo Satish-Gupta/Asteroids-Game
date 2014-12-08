@@ -44,10 +44,10 @@ function Ship() {
     };
 
     this.moveForward = function() {
-
+        console.log('move forward(ship)')
         that.posCenter[0] += that.posUnitVector[0] * that.movementStep;
         that.posCenter[1] += that.posUnitVector[1] * that.movementStep;
-        console.log(that.posUnitVector[0],that.posUnitVector[1]);
+        console.log('posUnitVector',that.posUnitVector[0],that.posUnitVector[1]);
         helper.placeElement(that);
 
     };
@@ -57,11 +57,13 @@ function Ship() {
         if(isClockwiseRotaion) {
 
             that.angle += that.deltaAngle;
+            that.angle %= 360;
             helper.rotateElement(that);
 
         } else {
 
             that.angle -= that.deltaAngle;
+            that.angle %= 360;
             helper.rotateElement(that)
 
         }

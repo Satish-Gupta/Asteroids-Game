@@ -47,10 +47,8 @@ function Helper() {
     // updates the html element positions
     this.placeElement = function (obj) {
 
-        console.log(obj.element);
         obj.element.style.left = (obj.posCenter[0] - obj.width / 2) + 'px';
         obj.element.style.top = (obj.posCenter[1] - obj.height / 2) + 'px';
-        console.log('inside place Element', obj.element);
 
     };
 
@@ -59,7 +57,7 @@ function Helper() {
         var str = 'rotate(' + obj.angle + 'deg)';
 
         obj.element.style.transform = str;
-        console.log('inside rotateElement:element.style.transform', obj.element.rotation);
+//        console.log('inside rotateElement:element.style.transform', obj.element.rotation, ' obj.angle:',obj.angle);
 
     };
 
