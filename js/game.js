@@ -8,7 +8,7 @@ function AsteroidGame() {
         right : 39,
         up : 38,
         space : 32,
-    }
+    };
 
     var spaceEl;            // element representing space for the spaceship and asteroid
     var spaceWidth = 900;
@@ -24,7 +24,7 @@ function AsteroidGame() {
     var images = {
         ship: 'ship.png',
         space: 'space.png',
-        asteroids: '',
+        asteroids: 'asteroid.png',
         bullet: 'bullet.png',
     };
 
@@ -32,9 +32,22 @@ function AsteroidGame() {
         width: 10,
         height: 10,
         life: 40,
+        angle: 0,
+        deltaAngle: 0,
         image : images.bullet
     };
 
+    var rockPorperties = {
+        width: '60',
+        height: '60',
+        deltaAngle: 0.5,
+        posCenter: [],
+        // should be more that 1 to have a change in position since it will be multiplied by unit vector
+        movementStep: 2
+    };
+    var asteroidGenerationDelayCounter = 0;
+    var maxAsteroidInSpaceCount = 10;
+    var asteroidsInSpace = [];
     var helper;             // to hold the helper class instance
     var that = this;
 
@@ -74,7 +87,6 @@ function AsteroidGame() {
         helper = new Helper();
 
         createSpace();
-
         createShip();
         ship.showShipInfo();
 
@@ -119,7 +131,34 @@ function AsteroidGame() {
 
     };
 
+    var createAsteroid = function() {
+        console.log('inside createAsteroid');
+        var rotationDirection = [true, false];
+
+        rockPorperties.angle = Math.round(Math.random() * 360);
+        rockPorperties.posUnitVector = helper.angleToVector(rockPorperties.angle);
+        rockPorperties.posCenter = [Math.random() * spaceWidth, Math.random() * spaceHeight ];
+        rockPorperties.clockWiseRotation = rotationDirection[Math.round(Math.random())];
+
+        console.log(rockPorperties.posCenter[0],rockPorperties.posCenter[1]);
+        var asteroid = new Asteroid();
+        asteroid.init(null,rockPorperties,helper);
+        helper.createAndAppendElement(asteroid, spaceEl, images.asteroids);
+        helper.placeElement(asteroid);
+        asteroidsInSpace.push(asteroid);
+
+    };
+
+
     var gameloop = function() {
+
+        if(asteroidGenerationDelayCounter % 100 == 0) {
+            createAsteroid();
+            asteroidGenerationDelayCounter %= 1000;
+        }
+
+        asteroidGenerationDelayCounter++;
+
         if (pressedKeys.isPressed(keys.left)) {
 
             ship.rotateShip(false);     // rotate ship in counter clockwise direction
@@ -165,8 +204,43 @@ function AsteroidGame() {
                 }
             }
         }
+        for(var i = 0;i < asteroidsInSpace.length;i++) {
+
+
+            var asteroid = asteroidsInSpace[i];
+            if (asteroidGenerationDelayCounter % 50) {
+
+                asteroid.rotateAsteroid();
+                asteroid.moveForward();
+
+            }
+            if(asteroid) {
+                if(!isObjectInSpace(asteroid)) {
+
+                    asteroidsInSpace.splice(asteroidsInSpace.indexOf(asteroid), 1);
+                    helper.removeElement(asteroid, spaceEl);
+                }
+            }
+        }
     };
 
+    var isObjectInSpace = function(object) {
+
+        var objectLeftEndPos = object.posCenter[0] - object.width / 2;
+        var objectRightEndPos = object.posCenter[0] + object.width / 2;
+        var objectTopEndPos = object.posCenter[1] - object.height / 2;
+        var objectBottomEndPos = object.posCenter[1] + object.height / 2;
+
+        if(objectLeftEndPos > spaceWidth | objectRightEndPos < 0 | objectTopEndPos > spaceHeight
+            | objectBottomEndPos < 0) {
+
+            return false;
+
+        }
+
+        return true;
+
+    };
     var keyupEventHandler = function (event) {
 
         console.log('inside keyupEventHandler',event.keyCode);

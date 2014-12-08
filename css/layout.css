@@ -6,4 +6,5 @@
     height: 600px;
     background: red;
     margin: 0 auto;
+    overflow: hidden;
 }
