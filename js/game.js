@@ -88,6 +88,7 @@ function AsteroidGame() {
 
         createSpace();
         createShip();
+//        createAsteroid();
         ship.showShipInfo();
 
         // register Event listeners
@@ -134,10 +135,28 @@ function AsteroidGame() {
     var createAsteroid = function() {
         console.log('inside createAsteroid');
         var rotationDirection = [true, false];
+        var width = rockPorperties.width;
+        // used while generating random number from 0-90 and 270-360
+        var temp = [1,3];
+        // space left,right,top,bottom boundry co-ordinates
+        var spaceBoundries = [[-width/2 ,Math.random() * spaceHeight],[spaceWidth + width / 2,Math.random() * spaceHeight],
+                            [Math.random() * spaceWidth, -width / 2],[ Math.random() * spaceWidth, spaceHeight + width / 2]];
 
-        rockPorperties.angle = Math.round(Math.random() * 360);
+        //get appropriate direction for corresponding boundaries for asteroid to move into the space
+        var angleForBoundaries = [ Math.random() * 90 * temp[Math.round(Math.random())],
+                                        Math.random() * 180 + 90,
+                                        Math.random() * 180,
+                                        Math.random() * 180 + 180
+                                        ];
+
+        var selectedBoundary = Math.round(Math.random() * 3);
+        rockPorperties.posCenter = spaceBoundries[selectedBoundary];
+        rockPorperties.angle = angleForBoundaries[selectedBoundary];
+
+//        rockPorperties.posCenter = [Math.random() * spaceWidth, Math.random() * spaceHeight ];
+//        rockPorperties.angle = Math.round(Math.random() * 360);
         rockPorperties.posUnitVector = helper.angleToVector(rockPorperties.angle);
-        rockPorperties.posCenter = [Math.random() * spaceWidth, Math.random() * spaceHeight ];
+
         rockPorperties.clockWiseRotation = rotationDirection[Math.round(Math.random())];
 
         console.log(rockPorperties.posCenter[0],rockPorperties.posCenter[1]);
@@ -151,8 +170,9 @@ function AsteroidGame() {
 
 
     var gameloop = function() {
-
-        if(asteroidGenerationDelayCounter % 100 == 0) {
+//        console.log('inside game loop');
+//        console.log(ship.firedBulletsInSpace.length,asteroidsInSpace.length,pressedKeys.pressedKeyCodes.length);
+        if(asteroidGenerationDelayCounter % 50 == 0) {
             createAsteroid();
             asteroidGenerationDelayCounter %= 1000;
         }
@@ -195,11 +215,12 @@ function AsteroidGame() {
                 if (currBullet.age < currBullet.life) {
 
                     currBullet.moveForward();
+                    checkBulletHit(currBullet);         // check bullet coollision with rocks
 
                 } else {
 
                     helper.removeElement(currBullet, spaceEl);
-                    delete ship.firedBulletsInSpace[i];
+                    ship.firedBulletsInSpace.splice(i,1);
 
                 }
             }
@@ -217,11 +238,13 @@ function AsteroidGame() {
             if(asteroid) {
                 if(!isObjectInSpace(asteroid)) {
 
-                    asteroidsInSpace.splice(asteroidsInSpace.indexOf(asteroid), 1);
+                    asteroidsInSpace.splice(i, 1);
                     helper.removeElement(asteroid, spaceEl);
                 }
             }
         }
+
+
     };
 
     var isObjectInSpace = function(object) {
@@ -231,8 +254,9 @@ function AsteroidGame() {
         var objectTopEndPos = object.posCenter[1] - object.height / 2;
         var objectBottomEndPos = object.posCenter[1] + object.height / 2;
 
-        if(objectLeftEndPos > spaceWidth | objectRightEndPos < 0 | objectTopEndPos > spaceHeight
-            | objectBottomEndPos < 0) {
+        //
+        if(objectLeftEndPos > spaceWidth + object.width | objectRightEndPos < -object.width |
+            objectTopEndPos > spaceHeight + object.width | objectBottomEndPos < -object.width) {
 
             return false;
 
@@ -241,6 +265,30 @@ function AsteroidGame() {
         return true;
 
     };
+    // handle bullet asteroid collision
+    var checkBulletHit = function(bullet) {
+
+            for (var j = 0; j < asteroidsInSpace.length; j++) {
+                var asteroid = asteroidsInSpace[j];
+
+                if(asteroid != null && bullet!= null) {
+                    console.log('inside bullet hit',bullet.pos, asteroid.pos);
+                    console.log(helper.calculateDistance(bullet.posCenter, asteroid.posCenter), (asteroid.width / 2 + bullet.width / 2))
+
+                    if (helper.calculateDistance(bullet.posCenter, asteroid.posCenter) <= (bullet.width / 2 + asteroid.width / 2)) {
+
+                        console.log('inside bullet collision detection')
+                        helper.removeElement(asteroid, spaceEl);
+                        helper.removeElement(bullet, spaceEl);
+                        asteroidsInSpace.splice(j, 1);
+                        ship.firedBulletsInSpace.splice(ship.firedBulletsInSpace.indexOf(bullet), 1);
+
+                    }
+                }
+            }
+//        }
+    };
+
     var keyupEventHandler = function (event) {
 
         console.log('inside keyupEventHandler',event.keyCode);
