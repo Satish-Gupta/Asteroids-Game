@@ -171,7 +171,7 @@ function AsteroidGame() {
 
     var gameloop = function() {
 //        console.log('inside game loop');
-//        console.log(ship.firedBulletsInSpace.length,asteroidsInSpace.length,pressedKeys.pressedKeyCodes.length);
+        console.log(ship.firedBulletsInSpace.length,asteroidsInSpace.length);
         if(asteroidGenerationDelayCounter % 50 == 0) {
             createAsteroid();
             asteroidGenerationDelayCounter %= 1000;
@@ -215,8 +215,11 @@ function AsteroidGame() {
                 if (currBullet.age < currBullet.life) {
 
                     currBullet.moveForward();
-                    checkBulletHit(currBullet);         // check bullet coollision with rocks
-
+                    var isCollsion = checkCollision(currBullet, asteroidsInSpace, true);         // check bullet coollision with rocks
+                    if(isCollsion) {
+                        helper.removeElement(currBullet, spaceEl);
+                        ship.firedBulletsInSpace.splice(i, 1);
+                    }
                 } else {
 
                     helper.removeElement(currBullet, spaceEl);
@@ -233,6 +236,11 @@ function AsteroidGame() {
 
                 asteroid.rotateAsteroid();
                 asteroid.moveForward();
+                var isCollision = checkCollision(asteroid, [ship], false);
+                if(isCollision) {
+                    helper.removeElement(asteroid, spaceEl);
+                    asteroidsInSpace.splice(i, 1);
+                }
 
             }
             if(asteroid) {
@@ -255,8 +263,8 @@ function AsteroidGame() {
         var objectBottomEndPos = object.posCenter[1] + object.height / 2;
 
         //
-        if(objectLeftEndPos > spaceWidth + object.width | objectRightEndPos < -object.width |
-            objectTopEndPos > spaceHeight + object.width | objectBottomEndPos < -object.width) {
+        if(objectLeftEndPos > spaceWidth + object.width || objectRightEndPos < -object.width ||
+            objectTopEndPos > spaceHeight + object.width || objectBottomEndPos < -object.width) {
 
             return false;
 
@@ -265,28 +273,27 @@ function AsteroidGame() {
         return true;
 
     };
-    // handle bullet asteroid collision
-    var checkBulletHit = function(bullet) {
+    // check collision between a given object and each object of another collection
+    var checkCollision = function(obj, objects, isdelete) {
 
-            for (var j = 0; j < asteroidsInSpace.length; j++) {
-                var asteroid = asteroidsInSpace[j];
+            for (var j = 0; j < objects.length; j++) {
+                var obj2 = objects[j];
 
-                if(asteroid != null && bullet!= null) {
-                    console.log('inside bullet hit',bullet.pos, asteroid.pos);
-                    console.log(helper.calculateDistance(bullet.posCenter, asteroid.posCenter), (asteroid.width / 2 + bullet.width / 2))
+                if(obj2 != null && obj!= null) {
+//                    console.log('inside collision detection',obj.pos, obj2.pos);
+//                    console.log(helper.calculateDistance(obj.posCenter, obj2.posCenter), (obj2.width / 2 + obj.width / 2))
 
-                    if (helper.calculateDistance(bullet.posCenter, asteroid.posCenter) <= (bullet.width / 2 + asteroid.width / 2)) {
+                    if (helper.calculateDistance(obj.posCenter, obj2.posCenter) <= (obj.width / 2 + obj2.width / 2)) {
 
-                        console.log('inside bullet collision detection')
-                        helper.removeElement(asteroid, spaceEl);
-                        helper.removeElement(bullet, spaceEl);
-                        asteroidsInSpace.splice(j, 1);
-                        ship.firedBulletsInSpace.splice(ship.firedBulletsInSpace.indexOf(bullet), 1);
-
+                        if(isdelete) {
+                            helper.removeElement(obj2, spaceEl);
+                            objects.splice(j, 1);
+                        }
+                        return true;
                     }
                 }
             }
-//        }
+        return false;
     };
 
     var keyupEventHandler = function (event) {
