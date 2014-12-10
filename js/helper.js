@@ -39,10 +39,10 @@ function Helper() {
 
     };
 
-    // reomove html element from the dom
+    // remove html element from the dom
     this.removeElement = function(obj, parentEl) {
         parentEl.removeChild(obj.element);
-    }
+    };
 
     // updates the html element positions
     this.placeElement = function (obj) {

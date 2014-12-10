@@ -70,4 +70,29 @@ function Asteroid() {
         console.log('unitVector',that.posUnitVector);
 
     };
+    this.split = function(spaceEl, images ) {
+        var childrenAsteroids = [new Asteroid(), new Asteroid()];
+        var childrenAsteroidProperties = {
+            width : that.width / 2,
+            height : that.height / 2,
+            angle : 300,
+            deltaAngle : that.deltaAngle,
+            posCenter : [that.posCenter[0], that.posCenter[1] - that.width / 4],
+            movementStep : that.movementStep,
+            clockWiseRotation : that.clockWiseRotation
+        };
+
+        childrenAsteroids[0].init(null, childrenAsteroidProperties, helper);
+        helper.createAndAppendElement(childrenAsteroids[0], spaceEl, images.debris );
+        helper.placeElement(childrenAsteroids[0]);
+
+        childrenAsteroidProperties.angle = 45;
+        childrenAsteroidProperties.posCenter = [that.posCenter[0], that.posCenter[1] + that.width / 4]
+
+        childrenAsteroids[1].init(null, childrenAsteroidProperties, helper);
+        helper.createAndAppendElement(childrenAsteroids[1], spaceEl, images.debris )
+        helper.placeElement(childrenAsteroids[1]);
+
+        return childrenAsteroids;
+    }
 }
