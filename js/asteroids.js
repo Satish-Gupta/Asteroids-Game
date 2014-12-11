@@ -28,7 +28,7 @@ function Asteroid() {
         that.deltaAngle = asteroidProperties.deltaAngle;
         that.movementStep = asteroidProperties.movementStep;
         that.clockWiseRotation = asteroidProperties.clockWiseRotation;
-        console.log(that.clockWiseRotation);
+//        console.log(that.clockWiseRotation);
         helper = mHelper;
         that.posUnitVector = helper.angleToVector(that);
 
@@ -70,12 +70,13 @@ function Asteroid() {
         console.log('unitVector',that.posUnitVector);
 
     };
+
     this.split = function(spaceEl, images ) {
         var childrenAsteroids = [new Asteroid(), new Asteroid()];
         var childrenAsteroidProperties = {
             width : that.width / 2,
             height : that.height / 2,
-            angle : 300,
+            angle : (that.angle - 20),
             deltaAngle : that.deltaAngle,
             posCenter : [that.posCenter[0], that.posCenter[1] - that.width / 4],
             movementStep : that.movementStep,
@@ -86,7 +87,7 @@ function Asteroid() {
         helper.createAndAppendElement(childrenAsteroids[0], spaceEl, images.debris );
         helper.placeElement(childrenAsteroids[0]);
 
-        childrenAsteroidProperties.angle = 45;
+        childrenAsteroidProperties.angle = (that.angle + 20);
         childrenAsteroidProperties.posCenter = [that.posCenter[0], that.posCenter[1] + that.width / 4]
 
         childrenAsteroids[1].init(null, childrenAsteroidProperties, helper);

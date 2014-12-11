@@ -34,7 +34,7 @@ function Helper() {
             element.style.background = 'url(images/' + image + ')';
         }
         obj.element = element;
-        console.log(obj.element);
+//        console.log(obj.element);
         parentElement.appendChild(element);
 
     };
@@ -73,7 +73,7 @@ function Helper() {
 
         return angle * Math.PI / 180;
 
-    }
+    };
 
     this.calculateDistance = function(pos1, pos2) {
         return Math.sqrt( Math.pow( (Math.abs(pos1[0])-Math.abs(pos2[0])), 2) + Math.pow( (Math.abs(pos1[1]) - Math.abs(pos2[1])), 2));

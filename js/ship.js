@@ -8,7 +8,7 @@ function Ship() {
     this.posCenter = [];     // x-y cordinate for center of ship respective of its container
     this.posUnitVector = [];    // unit vector for the center of ship
     this.angle = 0;
-    this.deltaAngle = 4;
+    this.deltaAngle = 3;
     this.movementStep = 4;
     this.bulletAvailable = 0;
     this.firedBulletsInSpace = [];   // tracks bullets fired from ship and still live
@@ -44,10 +44,10 @@ function Ship() {
     };
 
     this.moveForward = function() {
-        console.log('move forward(ship)')
+//        console.log('move forward(ship)')
         that.posCenter[0] += that.posUnitVector[0] * that.movementStep;
         that.posCenter[1] += that.posUnitVector[1] * that.movementStep;
-        console.log('posUnitVector',that.posUnitVector[0],that.posUnitVector[1]);
+//        console.log('posUnitVector',that.posUnitVector[0],that.posUnitVector[1]);
         helper.placeElement(that);
 
     };

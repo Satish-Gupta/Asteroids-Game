@@ -32,7 +32,7 @@ function AsteroidGame() {
     var bulletProperties = {
         width: 10,
         height: 10,
-        life: 40,
+        life: 150,
         angle: 0,
         deltaAngle: 0,
         image: images.bullet
@@ -89,8 +89,8 @@ function AsteroidGame() {
 
         createSpace();
         createShip();
-//        var asteroid = createAsteroid();
-//        asteroidsInSpace.push(asteroid);
+        var asteroid = createAsteroid();
+        asteroidsInSpace.push(asteroid);
         ship.showShipInfo();
 
         // register Event listeners
@@ -177,6 +177,8 @@ function AsteroidGame() {
 
 
     var gameloop = function () {
+        counter++;
+
         showDebugInfo(that, ship, asteroidsInSpace, ship.firedBulletsInSpace);
 //        console.log('inside game loop');
 //        console.log(ship.firedBulletsInSpace.length,asteroidsInSpace.length);
@@ -187,6 +189,13 @@ function AsteroidGame() {
 
         asteroidGenerationDelayCounter++;
 
+        handleKeyPresses();
+        handleBulletMovementandCollision();
+        handleAsteroidMovementAndCollision();
+
+    };
+
+    var handleKeyPresses = function() {
         if (pressedKeys.isPressed(keys.left)) {
 
             ship.rotateShip(false);     // rotate ship in counter clockwise direction
@@ -198,7 +207,12 @@ function AsteroidGame() {
 
         }
         if (pressedKeys.isPressed(keys.up)) {
-            ship.moveForward();
+            if(isObjectInSpace(ship, 0)) {
+                ship.moveForward();
+            } else {
+                getShipBackToSpace();
+                ship.moveForward();
+            }
         }
 
         if (pressedKeys.isPressed(keys.space)) {
@@ -215,64 +229,121 @@ function AsteroidGame() {
             pressedKeys.removeKey(keys.space);
 
         }
+    };
+    var getShipBackToSpace = function() {
+        var shipPosX = ship.posCenter[0];
+        var shipPosY = ship.posCenter[1];
+        var shipWidthHalf = ship.width / 2;
+        var shipHeightHalf = ship.height / 2;
+        if(shipPosX + shipWidthHalf > spaceWidth || shipPosX - shipWidthHalf < 0) {
+            ship.posCenter[0] = spaceWidth - shipPosX;
+            ship.posCenter[1] = spaceHeight - ship.posCenter[1];
+        } else {
+            ship.posCenter[1] = spaceHeight - shipPosY;
+            ship.posCenter[0] = spaceWidth - ship.posCenter[0];
+        }
+//        if(ship.posCenter[0] < 0) {
+//            ship.posCenter[0] = spaceWidth + ship.width / 2;
+//            ship.posCenter[1] = spaceHeight - ship.posCenter[1];
+//        } else if (ship.posCenter[1] < 0) {
+//            ship.posCenter[1] = spaceHeight + ship.width / 2;
+//            ship.posCenter[0] = spaceWidth - ship.posCenter[0];
+//        } else {
+//            ship.posCenter[0] %= spaceWidth;
+//            ship.posCenter[1] %= spaceHeight;
+//        }
+    };
+    var handleBulletMovementandCollision = function(asteroid) {
+        for(var j = 0; j < asteroidsInSpace.length;j++) {
+            var currAsteroid = asteroidsInSpace[j];
 
-        for (var i = 0; i < ship.firedBulletsInSpace.length; i++) {
+            for (var i = 0; i < ship.firedBulletsInSpace.length; i++) {
 
-            var currBullet = ship.firedBulletsInSpace[i];
-            if (currBullet) {
-                if (currBullet.age < currBullet.life) {
+                var currBullet = ship.firedBulletsInSpace[i];
 
-                    currBullet.moveForward();
-                    var isCollision = checkCollision(currBullet, asteroidsInSpace, true);         // check bullet coollision with rocks
-                    if (isCollision) {
+                if (currBullet != undefined) {
+                    if (currBullet.age < currBullet.life) {
+
+                        currBullet.moveForward();
+
+                        if (currAsteroid != undefined) {
+                            var isCollision = checkCollision(currBullet, currAsteroid);         // check bullet coollision with asteroid
+                            console.log(isCollision);
+                            if (isCollision) {
+                                helper.removeElement(currBullet, spaceEl);
+                                ship.firedBulletsInSpace.splice(i, 1);
+                                console.log(isCollision, 1);
+                                if (currAsteroid.width > rockPorperties.width / 4) {
+                                    var debris = currAsteroid.split(spaceEl, images);
+
+                                    for (var k = 0; k < debris.length; k++) {
+                                        asteroidsInSpace.push(debris[k]);
+                                    }
+
+                                    console.log(isCollision, 2);
+                                }
+                                console.log(isCollision, 3);
+                                helper.removeElement(currAsteroid, spaceEl);
+                                asteroidsInSpace.splice(j, 1);
+                            }
+                        }
+                    } else {
+
                         helper.removeElement(currBullet, spaceEl);
                         ship.firedBulletsInSpace.splice(i, 1);
                     }
-                } else {
-
-                    helper.removeElement(currBullet, spaceEl);
-                    ship.firedBulletsInSpace.splice(i, 1);
-
-                }
-            }
-        }
-        for (var i = 0; i < asteroidsInSpace.length; i++) {
-
-            var asteroid = asteroidsInSpace[i];
-
-            if (asteroid) {
-
-                asteroid.rotateAsteroid();
-                asteroid.moveForward();
-                var isCollision = false;
-                if (!isCollisionDisabled) {
-                    isCollision = checkCollision(ship, [asteroid], true);
-                }
-                if (isCollision) {
-//                    helper.removeElement(asteroid, spaceEl);
-//                    asteroidsInSpace.splice(i, 1);
-                    isCollisionDisabled = true;
-
-                    // to re enable collision after specified delay
-                    setTimeout(function (isCollisionDisable) {
-                        isCollisionDisabled = false;
-                    }, 500);
-
-                    ship.posCenter = [spaceWidth / 2, spaceHeight / 2];
-                    helper.placeElement(ship);
-                    console.log('djlfjl', ship.posCenter);
-                } else if (!isObjectInSpace(asteroid)) {
-
-                    asteroidsInSpace.splice(i, 1);
-                    helper.removeElement(asteroid, spaceEl);
-
                 }
 
             }
         }
     };
 
-    var isObjectInSpace = function (object) {
+    var handleAsteroidMovementAndCollision = function() {
+        for(var j = 0; j < asteroidsInSpace.length;j++) {
+            var currAsteroid = asteroidsInSpace[j];
+
+            if (currAsteroid != null) {
+
+                currAsteroid.rotateAsteroid();
+                currAsteroid.moveForward();
+//                isCollision = false;
+//                if (!isCollisionDisabled) {
+                var isCollision = checkCollision(ship, currAsteroid);
+                if (isCollision) {
+//                    helper.removeElement(asteroid, spaceEl);
+//                    asteroidsInSpace.splice(i, 1);
+//                        isCollisionDisabled = true;
+                    if (currAsteroid.width > rockPorperties.width / 4) {
+                        var debris = currAsteroid.split(spaceEl, images);
+                        for (var k = 0; k < debris.length; k++) {
+                            asteroidsInSpace.push(debris[k])
+                        }
+                    }
+                    helper.removeElement(currAsteroid, spaceEl);
+                    asteroidsInSpace.splice(j, 1);
+
+                    // to re enable collision after specified delay
+                    setTimeout(function (isCollisionDisabled) {
+                        isCollisionDisabled = false;
+                    }, 20);
+
+//                        ship.posCenter = [spaceWidth / 2, spaceHeight / 2];
+//                        helper.placeElement(ship);
+//                    console.log('djlfjl', ship.posCenter);
+                }
+//                }
+                if (!isObjectInSpace(currAsteroid, currAsteroid.width / 2)) {
+
+                    asteroidsInSpace.splice(j, 1);
+                    helper.removeElement(currAsteroid, spaceEl);
+
+                }
+
+//            }
+            }
+        }
+    };
+    var isObjectInSpace = function (object, offset) {
 
         var objectLeftEndPos = object.posCenter[0] - object.width / 2;
         var objectRightEndPos = object.posCenter[0] + object.width / 2;
@@ -280,8 +351,8 @@ function AsteroidGame() {
         var objectBottomEndPos = object.posCenter[1] + object.height / 2;
 
         // check if object is totally gone out of space
-        if (objectLeftEndPos > spaceWidth + object.width / 2 || objectRightEndPos < -object.width / 2 ||
-            objectTopEndPos > spaceHeight + object.width / 2 || objectBottomEndPos < -object.width / 2) {
+        if (objectLeftEndPos > spaceWidth + offset || objectRightEndPos < -offset ||
+            objectTopEndPos > spaceHeight + offset || objectBottomEndPos < -offset) {
 
             return false;
 
@@ -289,43 +360,22 @@ function AsteroidGame() {
         return true;
     };
 
-    // check collision between a given object and each object of another collection
-    var checkCollision = function (obj, objects, isdelete) {
+    var checkCollision = function (obj1, obj2) {
 
-        for (var j = 0; j < objects.length; j++) {
-            var obj2 = objects[j];
+            var obj1Radius = obj1.width / 2;
+            var obj2Radius = obj2.width / 2;
+            if (obj1 != undefined && obj2 != undefined) {
 
-            if (obj2 != null && obj != null) {
-//                    console.log('inside collision detection',obj.pos, obj2.pos);
-//                    console.log(helper.calculateDistance(obj.posCenter, obj2.posCenter), (obj2.width / 2 + obj.width / 2))
-
-                if (helper.calculateDistance(obj.posCenter, obj2.posCenter) <= (obj.width / 2 + obj2.width / 2)) {
-                    if (obj2.width > rockPorperties.width / 4) {
-                        var debris = obj2.split(spaceEl, images);
-                        for (var i = 0; i < debris.length; i++) {
-
-                            asteroidsInSpace.push(debris[i]);
-                        }
-                    } else {
-                        isdelete = true;
-                    }
-
-
-                    if (isdelete) {
-                        helper.removeElement(obj2, spaceEl);
-                        objects.splice(j, 1);
-                        isdelete = false;
-                    }
+                if (helper.calculateDistance(obj1.posCenter, obj2.posCenter) <= (obj1Radius + obj2Radius)) {
                     return true;
+                } else {
+                    return false;
                 }
             }
-        }
-        return false;
     };
-
     var keyupEventHandler = function (event) {
 
-        console.log('inside keyupEventHandler', event.keyCode);
+//        console.log('inside keyupEventHandler', event.keyCode);
         // do not remove if key is space since gameloop is handling the removal
         if (event.keyCode != keys.space) {
             pressedKeys.removeKey(event.keyCode);
@@ -334,9 +384,9 @@ function AsteroidGame() {
 
     var keydownEventHandler = function (event) {
 
-        console.log('inside keydownEventHandler');
+//        console.log('inside keydownEventHandler');
         var keyPressed = event.keyCode;
-        console.log(pressedKeys.pressedKeyCodes);
+//        console.log(pressedKeys.pressedKeyCodes);
 
         if (!pressedKeys.isPressed(keyPressed)) {
 
@@ -353,3 +403,8 @@ mainWrapper[0].appendChild(gameWrapper);
 
 var game = new AsteroidGame();
 game.init(gameWrapper, 900, 600);
+setInterval(function() {
+    console.log(counter);
+    fps = counter;
+    counter = 0;
+},1000);
