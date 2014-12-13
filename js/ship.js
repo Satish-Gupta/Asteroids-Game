@@ -9,21 +9,22 @@ function Ship() {
     this.posUnitVector = [];    // unit vector for the center of ship
     this.angle = 0;
     this.deltaAngle = 3;
-    this.movementStep = 4;
+    this.movementStep = 0;
     this.bulletAvailable = 0;
-    this.firedBulletsInSpace = [];   // tracks bullets fired from ship and still live
+//    this.firedBulletsInSpace = [];   // tracks bullets fired from ship and still live
     this.element;
 
     var helper;
     var that = this;
 
-    this.init = function(el, wdth, ht, pos, vel, shipAngle, mhelper) {
+    this.init = function(shipProperties, mhelper) {
 
-        that.element = el;
-        that.width = wdth;
-        that.height = ht;
-        that.angle = shipAngle;
-        that.posCenter = pos;
+        that.element = shipProperties.element;
+        that.width = shipProperties.width;
+        that.height = shipProperties.height;
+        that.angle = shipProperties.initAngle;
+        that.posCenter = shipProperties.posCenter;
+        that.movementStep = shipProperties.movementStep;
         helper = mhelper;
         helper.placeElement(that);
         helper.rotateElement(that);
@@ -78,7 +79,6 @@ function Ship() {
         bulletProperties.posUnitVector = that.posUnitVector;
 
         bullet.init(null, bulletProperties, helper);
-        that.firedBulletsInSpace.push(bullet);
 
     };
 
