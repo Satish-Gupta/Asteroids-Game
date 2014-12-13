@@ -6,11 +6,11 @@ var keyPressedNow = '';
 var debugStr = '';
 var counter = 0;
 var fps = 0;
-function showDebugInfo(game, ship, asteroids, bullets) {
+function showDebugInfo(game, ship, asteroids, bullets,isshipinspace,shipVelocity) {
 
     debugStr = 'ship: pos Center= ['  + ship.posCenter[0] + ', ' + ship.posCenter[1]
                          +'] <br>angle:' + ship.angle + '<br>asteroids in space length' + asteroids.length
-                        +'<br>bullets in space length:' + bullets.length + '<br>fps:' + fps;
+                        +'<br>bullets in space length:' + bullets.length + '<br>fps:' + fps + 'isshipinspace' + isshipinspace + ' ship velocity' + shipVelocity;
     var debugInfoEl = document.getElementById('debug');
     debugInfoEl.innerHTML = debugStr;
 

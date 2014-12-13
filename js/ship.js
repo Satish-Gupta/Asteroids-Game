@@ -9,7 +9,8 @@ function Ship() {
     this.posUnitVector = [];    // unit vector for the center of ship
     this.angle = 0;
     this.deltaAngle = 3;
-    this.movementStep = 0;
+    this.velocity = 0;
+    this.friction = 0;
     this.bulletAvailable = 0;
 //    this.firedBulletsInSpace = [];   // tracks bullets fired from ship and still live
     this.element;
@@ -24,7 +25,8 @@ function Ship() {
         that.height = shipProperties.height;
         that.angle = shipProperties.initAngle;
         that.posCenter = shipProperties.posCenter;
-        that.movementStep = shipProperties.movementStep;
+        that.velocity = shipProperties.velocity;
+        that.friction = shipProperties.friction;
         helper = mhelper;
         helper.placeElement(that);
         helper.rotateElement(that);
@@ -46,8 +48,19 @@ function Ship() {
 
     this.moveForward = function() {
 //        console.log('move forward(ship)')
-        that.posCenter[0] += that.posUnitVector[0] * that.movementStep;
-        that.posCenter[1] += that.posUnitVector[1] * that.movementStep;
+
+        if(that.velocity <= 0 ) {
+//            that.friction = 0;
+            that.velocity = 0;
+        }else {
+//            that.posCenter[0] += that.posUnitVector[0] * that.friction;
+//            that.posCenter[1] += that.posUnitVector[1] * that.friction;
+            that.velocity -= that.friction;
+            that.posCenter[0] += that.posUnitVector[0] * Math.abs(that.velocity);
+            that.posCenter[1] += that.posUnitVector[1] * Math.abs(that.velocity);
+        }
+
+
 //        console.log('posUnitVector',that.posUnitVector[0],that.posUnitVector[1]);
         helper.placeElement(that);
 
@@ -77,7 +90,11 @@ function Ship() {
         bulletProperties.angle = that.angle;
         bulletProperties.posCenter = that.getShipGunTipPos();
         bulletProperties.posUnitVector = that.posUnitVector;
-
+        if( that.velocity > 2) {
+            bulletProperties.movementStep = that.velocity;
+        } else {
+            bulletProperties.movementStep = 2;
+        }
         bullet.init(null, bulletProperties, helper);
 
     };

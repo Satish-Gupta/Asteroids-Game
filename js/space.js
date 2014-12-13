@@ -85,23 +85,23 @@ function Space() {
         var shipPosY = ship.posCenter[1];
         var shipWidthHalf = ship.width / 2;
         var shipHeightHalf = ship.height / 2;
-        if (shipPosX + shipWidthHalf > width || shipPosX - shipWidthHalf < 0) {
-            ship.posCenter[0] = width - shipPosX;
-            ship.posCenter[1] = height - ship.posCenter[1];
-        } else {
-            ship.posCenter[1] = height - shipPosY;
-            ship.posCenter[0] = width - ship.posCenter[0];
-        }
-//        if(ship.posCenter[0] < 0) {
-//            ship.posCenter[0] = spaceWidth + ship.width / 2;
-//            ship.posCenter[1] = spaceHeight - ship.posCenter[1];
-//        } else if (ship.posCenter[1] < 0) {
-//            ship.posCenter[1] = spaceHeight + ship.width / 2;
-//            ship.posCenter[0] = spaceWidth - ship.posCenter[0];
+//        if (shipPosX + shipWidthHalf > width || shipPosX - shipWidthHalf < 0) {
+//            ship.posCenter[0] = Math.round(width - shipPosX - 1);
+//            ship.posCenter[1] = Math.round(height - ship.posCenter[1]);
 //        } else {
-//            ship.posCenter[0] %= spaceWidth;
-//            ship.posCenter[1] %= spaceHeight;
+//            ship.posCenter[1] = Math.round(height - shipPosY - 1);
+//            ship.posCenter[0] = Math.round(width - ship.posCenter[0]);
 //        }
+        if(ship.posCenter[0] <= ship.width / 2) {
+            ship.posCenter[0] = width + ship.width / 2;
+//            ship.posCenter[1] = height - ship.posCenter[1];
+        } else if (ship.posCenter[1] <= ship.height / 2) {
+            ship.posCenter[1] = height + ship.width / 2;
+//            ship.posCenter[0] = width - ship.posCenter[0];
+        } else {
+            ship.posCenter[0] %= (width + ship.width / 2);
+            ship.posCenter[1] %= (height + ship.height / 2);
+        }
     };
 
     this.handleBulletMovementandCollision = function (asteroidProperties, images) {

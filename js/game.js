@@ -1,4 +1,4 @@
-'use strict';
+ 'use strict';
 
 function AsteroidGame() {
 
@@ -28,7 +28,8 @@ function AsteroidGame() {
         height: 70,
         initAngle: 270,
         image: images.ship,
-        movementStep : 4
+        friction: 0.05,
+        velocity : 0
     };
     var bulletProperties = {
         width: 10,
@@ -116,13 +117,13 @@ function AsteroidGame() {
         spaceProperties.element = spaceEl;
         space = new Space();
         space.init(spaceProperties, helper);
-
     };
 
     var gameloop = function () {
         counter++;
 
-        showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace);
+        showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
+                        space.ship.velocity);
 
         if (asteroidGenerationDelayCounter % 50 == 0) {
 
@@ -132,6 +133,12 @@ function AsteroidGame() {
         }
 
         asteroidGenerationDelayCounter++;
+        if(space.isObjectInSpace(space.ship, 0)) {
+            space.ship.moveForward();
+        } else {
+            space.getShipBackToSpace();
+
+        }
 
         handleKeyPresses();
         space.handleBulletMovementandCollision(asteroidProperties, images);
@@ -151,12 +158,14 @@ function AsteroidGame() {
 
         }
         if (pressedKeys.isPressed(keys.up)) {
-            if(space.isObjectInSpace(space.ship, 0)) {
-                space.ship.moveForward();
-            } else {
-                space.getShipBackToSpace();
-                space.ship.moveForward();
+            if(space.ship.velocity < 5) {
+                space.ship.velocity += 0.2;
             }
+//            if(space.isObjectInSpace(space.ship, 0)) {
+//                space.ship.moveForward();
+//            } else {
+//                space.getShipBackToSpace();
+//            }
         }
 
         if (pressedKeys.isPressed(keys.space)) {

@@ -8,7 +8,7 @@ function Bullet() {
     this.element = 0;
     this.posCenter = [];     // x-y cordinate for center of ship respective of its container
     this.posUnitVector = [];    // unit vector for the center of ship (x-y cordinates between 0 and 1)
-    this.movementStep = 2;
+    this.movementStep = 0;
 
     this.life = 0;
     this.age = 0;
@@ -26,6 +26,7 @@ function Bullet() {
         that.posCenter = bulletProperties.posCenter;
         that.posUnitVector = bulletProperties.posUnitVector
         that.life = bulletProperties.life;
+        that.movementStep = bulletProperties.movementStep
 
         that.helper = helper;
         console.log(that.element,that.width,that.height,that.angle,that.life)
