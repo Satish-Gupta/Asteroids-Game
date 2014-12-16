@@ -84,14 +84,14 @@ function Asteroid() {
         };
 
         childrenAsteroids[0].init(null, childrenAsteroidProperties, helper);
-        helper.createAndAppendElement(childrenAsteroids[0], spaceEl, images.debris );
+        helper.createAndAppendElement(childrenAsteroids[0], spaceEl, images.debris);
         helper.placeElement(childrenAsteroids[0]);
 
         childrenAsteroidProperties.angle = (that.angle + 20);
         childrenAsteroidProperties.posCenter = [that.posCenter[0], that.posCenter[1] + that.width / 4]
 
         childrenAsteroids[1].init(null, childrenAsteroidProperties, helper);
-        helper.createAndAppendElement(childrenAsteroids[1], spaceEl, images.debris )
+        helper.createAndAppendElement(childrenAsteroids[1], spaceEl, images.debris)
         helper.placeElement(childrenAsteroids[1]);
 
         return childrenAsteroids;

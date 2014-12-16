@@ -29,7 +29,6 @@ function Helper() {
         element.style.width = obj.width + "px";
         element.style.height = obj.height + "px";
         element.style.position = 'absolute';
-
         if(image) {
             element.style.background = 'url(images/' + image + ')';
         }
@@ -41,7 +40,10 @@ function Helper() {
 
     // remove html element from the dom
     this.removeElement = function(obj, parentEl) {
-        parentEl.removeChild(obj.element);
+        console.log(obj.width)
+        if(obj.element) {
+            parentEl.removeChild(obj.element);
+        }
     };
 
     // updates the html element positions

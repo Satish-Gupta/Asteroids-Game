@@ -12,6 +12,8 @@ function Ship() {
     this.velocity = 0;
     this.friction = 0;
     this.bulletAvailable = 0;
+    this.isCollisionEnabled = true;
+    this.isFiringEnabled = true;
 //    this.firedBulletsInSpace = [];   // tracks bullets fired from ship and still live
     this.element;
 
@@ -90,10 +92,10 @@ function Ship() {
         bulletProperties.angle = that.angle;
         bulletProperties.posCenter = that.getShipGunTipPos();
         bulletProperties.posUnitVector = that.posUnitVector;
-        if( that.velocity > 2) {
+        if( that.velocity >= 1) {
             bulletProperties.movementStep = that.velocity;
         } else {
-            bulletProperties.movementStep = 2;
+            bulletProperties.movementStep = 3;
         }
         bullet.init(null, bulletProperties, helper);
 

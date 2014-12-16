@@ -3,11 +3,19 @@
 function AsteroidGame() {
 
     var gameWrapper;
+    this.score = 0;
+    this.life = 3;
+    var lifePanel;
+    var scoreBoard;
+    var level = [2,3,4,5];
+    var intervalId;
     var keys = {
         left: 37,
         right: 39,
         up: 38,
+        down: 40,
         space: 32,
+        escape: 27
     };
     var images = {
         ship: 'ship.png',
@@ -90,13 +98,47 @@ function AsteroidGame() {
         createSpace();
         space.createShip(shipProperties, images);
         space.ship.showShipInfo();
-
+        createWelcomeScreen();
         // register Event listeners
         document.addEventListener('keydown', keydownEventHandler);
         document.addEventListener('keyup', keyupEventHandler);
-        setInterval(gameloop, 20)
+//        intervalId = setInterval(gameloop, 20)
 
     };
+    var pause = function() {
+        clearInterval(intervalId);
+    };
+    var resume = function() {
+        intervalId = setInterval(gameloop,20);
+    };
+    var restart = function() {
+        that.score = 0;
+        that.life = 3;
+        for(var i = 0;i < space.asteroidsInSpace.length;i++) {
+            var asteroid = space.asteroidsInSpace[i];
+            if(asteroid) {
+                console.log('asteroid removal')
+                space.element.removeChild(asteroid.element);
+            }
+        }
+//        space.asteroidsInSpace = undefined;
+        for(var i = 0;i < space.firedBulletsInSpace.length;i++) {
+            var bullet = space.firedBulletsInSpace[i];
+            if(bullet) {
+                console.log('bullet removal')
+                space.element.removeChild(bullet.element);
+            }
+        }
+//        space.firedBulletsInSpace = undefined;
+//        spaceProperties.element = space.ship.element;
+//        space.ship.init(spaceProperties, helper);
+        clearInterval(intervalId);
+        that.welcomeScreen.style.display = 'none';
+        showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
+            space.ship.velocity);
+        intervalId = setInterval(gameloop,20);
+    };
+
 
     var setWrapperProperties = function (width, height) {
 
@@ -104,6 +146,78 @@ function AsteroidGame() {
         gameWrapper.style.height = height;
         gameWrapper.style.position = 'relative';
         gameWrapper.style.margin = '0 auto';
+
+    };
+    var createWelcomeScreen = function() {
+        var welComeScreen;
+        welComeScreen = document.createElement('div');
+        welComeScreen.style.width = spaceProperties.width / 2 + 'px';
+        welComeScreen.style.height = spaceProperties.height / 2+ 'px';
+//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
+        welComeScreen.style.position = 'absolute';
+        welComeScreen.style.marginLeft = spaceProperties.width / 4 + 'px';
+        welComeScreen.style.marginTop = spaceProperties.height / 4 + 'px';
+//        welComeScreen.style.position = 'relative';
+//        welComeScreen.innerHTML = "click to start";
+//        welComeScreen.onclick = function() {
+//            intervalId = setInterval(gameloop,20);
+//            welComeScreen.style.display = 'none';
+//        };
+
+        var startButton;
+        startButton = document.createElement('button');
+        startButton.style.width = 100 + 'px';
+        startButton.style.height = 50 + 'px';
+//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
+//        startButton.style.position = 'absolute';
+        startButton.style.marginLeft = 200 + 'px';
+        startButton.style.marginTop = 50 + 'px';
+        startButton.innerHTML = "start";
+        startButton.onclick = function() {
+            intervalId = setInterval(gameloop,20);
+            welComeScreen.style.display = 'none';
+        };
+        welComeScreen.appendChild(startButton);
+
+        var restartButton;
+        restartButton = document.createElement('button');
+        restartButton.style.width = 100 + 'px';
+        restartButton.style.height = 50 + 'px';
+//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
+//        startButton.style.position = 'absolute';
+        restartButton.style.marginLeft = 200 + 'px';
+        restartButton.style.marginTop = 50 + 'px';
+        restartButton.innerHTML = "resstart";
+        restartButton.onclick = function() {
+            restart();
+            welComeScreen.style.display = 'none';
+        };
+
+        welComeScreen.appendChild(restartButton);
+        scoreBoard = document.createElement('div');
+        scoreBoard.style.width = spaceProperties.width / 8 + 'px';
+        scoreBoard.style.height = spaceProperties.height / 12 + 'px';
+//        scoreBoard.style.background = 'gray';//'url(images/' + images.space + ')';
+        scoreBoard.style.position = 'absolute';
+        scoreBoard.style.marginLeft = 20 + 'px';
+        scoreBoard.style.marginTop = 20 + 'px';
+        scoreBoard.innerHTML = 'score' + that.score;
+        scoreBoard.style.color = 'white';
+        space.element.appendChild(scoreBoard);
+
+        lifePanel = document.createElement('div');
+        lifePanel.style.width = spaceProperties.width / 8 + 'px';
+        lifePanel.style.height = spaceProperties.height / 12 + 'px';
+//        lifePanel.style.background = 'gray';//'url(images/' + images.space + ')';
+        lifePanel.style.position = 'absolute';
+        lifePanel.style.marginLeft = spaceProperties.width - (spaceProperties.width / 8  + 20) + 'px';
+        lifePanel.style.marginTop = 20 + 'px';
+        lifePanel.innerHTML = 'life' + that.life;
+        lifePanel.style.color = 'white';
+
+        space.element.appendChild(lifePanel);
+        space.element.appendChild(welComeScreen);
+        that.welcomeScreen = welComeScreen;
 
     };
     var createSpace = function () {
@@ -115,12 +229,14 @@ function AsteroidGame() {
         spaceEl.style.position = 'relative';
         gameWrapper.appendChild(spaceEl);
         spaceProperties.element = spaceEl;
-        space = new Space();
+        space = new Space(that);
         space.init(spaceProperties, helper);
     };
 
     var gameloop = function () {
         counter++;
+        scoreBoard.innerHTML = 'score: ' + that.score;
+        lifePanel.innerHTML = 'life: ' + that.life;
 
         showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
                         space.ship.velocity);
@@ -131,6 +247,11 @@ function AsteroidGame() {
             asteroidGenerationDelayCounter %= 1000;
 
         }
+
+        asteroidProperties.movementStep = level[1];
+//        if(asteroidGenerationDelayCounter % 10 == 0) {
+//            asteroidProperties.movementStep += 0.1;
+//        }
 
         asteroidGenerationDelayCounter++;
         if(space.isObjectInSpace(space.ship, 0)) {
@@ -158,7 +279,7 @@ function AsteroidGame() {
 
         }
         if (pressedKeys.isPressed(keys.up)) {
-            if(space.ship.velocity < 5) {
+            if(space.ship.velocity < 10) {
                 space.ship.velocity += 0.2;
             }
 //            if(space.isObjectInSpace(space.ship, 0)) {
@@ -169,20 +290,31 @@ function AsteroidGame() {
         }
 
         if (pressedKeys.isPressed(keys.space)) {
-            var bullet = new Bullet();
-            space.ship.fireBullet(bullet, bulletProperties);
-            space.firedBulletsInSpace.push(bullet);
+            if(space.ship.isFiringEnabled) {
+                space.ship.isFiringEnabled = false;
+                setTimeout(function() {
+                    space.ship.isFiringEnabled = true;
+                },200);
+                var bullet = new Bullet();
+                space.ship.fireBullet(bullet, bulletProperties);
+                space.firedBulletsInSpace.push(bullet);
 //            console.log('space pressed',pressedKeys.pressedKeyCodes);
-            console.log(space.element);
-            helper.createAndAppendElement(bullet, space.element, images.bullet);
-            helper.placeElement(bullet);
+                console.log(space.element);
+                helper.createAndAppendElement(bullet, space.element, images.bullet);
+                helper.placeElement(bullet);
 
-            // remove the keySpace from pressed keys here instead relying in keyup handler since keyup
-            // handler may run after multiple passes of gameloop resulting in multiple bullet creation
-            // for a single Space bar press.
+                // remove the keySpace from pressed keys here instead relying in keyup handler since keyup
+                // handler may run after multiple passes of gameloop resulting in multiple bullet creation
+                // for a single Space bar press.
+            }
             pressedKeys.removeKey(keys.space);
-
         }
+        if(pressedKeys.isPressed(keys.escape)) {
+            that.welcomeScreen.style.display = 'block';
+            pause();
+            pressedKeys.removeKey(keys.escape);
+        }
+
     };
 
     var keyupEventHandler = function (event) {

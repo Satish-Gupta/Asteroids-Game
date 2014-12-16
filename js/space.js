@@ -2,12 +2,13 @@
  * Created by sg_2 on 11-12-2014.
  */
 
-function Space() {
+function Space(game) {
     var width = 0;
     var height = 0;
     var spaceCenter;
     this.ship;
     this.element;
+    this.game = game;
 
     this.asteroidsInSpace = [];
     this.firedBulletsInSpace = [];
@@ -123,6 +124,7 @@ function Space() {
                             var isCollision = that.checkCollision(currBullet, currAsteroid);         // check bullet coollision with asteroid
                             console.log(isCollision);
                             if (isCollision) {
+                                that.game.score++;
                                 helper.removeElement(currBullet, that.element);
                                 that.firedBulletsInSpace.splice(i, 1);
                                 console.log(isCollision, 1);
@@ -162,12 +164,14 @@ function Space() {
                 currAsteroid.rotateAsteroid();
                 currAsteroid.moveForward();
 //                isCollision = false;
-//                if (!isCollisionDisabled) {
+                if (that.ship.isCollisionEnabled) {
                 var isCollision = that.checkCollision(ship, currAsteroid);
                 if (isCollision) {
+                    that.game.life--;
 //                    helper.removeElement(asteroid, element);
 //                    asteroidsInSpace.splice(i, 1);
-//                        isCollisionDisabled = true;
+                        that.ship.isCollisionEnabled = false;
+                        that.ship.isFiringEnabled = false;
                     if (currAsteroid.width > asteroidProperties.width / 4) {
                         var debris = currAsteroid.split(that.element, images);
                         for (var k = 0; k < debris.length; k++) {
@@ -176,17 +180,19 @@ function Space() {
                     }
                     helper.removeElement(currAsteroid, that.element);
                     asteroids.splice(j, 1);
-
+                    ship.element.style.opacity = 0.5;
                     // to re enable collision after specified delay
-                    setTimeout(function (isCollisionDisabled) {
-                        isCollisionDisabled = false;
-                    }, 20);
+                    setTimeout(function () {
+                        that.ship.isCollisionEnabled = true;
+                        ship.element.style.opacity = 1;
+                        that.ship.isFiringEnabled = true;
+                    }, 1000);
 
 //                        ship.posCenter = [spaceWidth / 2, spaceHeight / 2];
 //                        helper.placeElement(ship);
 //                    console.log('djlfjl', ship.posCenter);
                 }
-//                }
+                }
                 if (!that.isObjectInSpace(currAsteroid, currAsteroid.width / 2)) {
 
                     asteroids.splice(j, 1);

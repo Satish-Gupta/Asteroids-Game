@@ -33,7 +33,6 @@ function Bullet() {
     };
 
     this.moveForward = function() {
-
             that.posCenter[0] += that.posUnitVector[0] * that.movementStep;
             that.posCenter[1] += that.posUnitVector[1] * that.movementStep;
 
