@@ -124,7 +124,11 @@ function Space(game) {
                             var isCollision = that.checkCollision(currBullet, currAsteroid);         // check bullet coollision with asteroid
                             console.log(isCollision);
                             if (isCollision) {
-                                that.game.score++;
+                                if (currAsteroid.width < asteroidProperties.width) {
+                                    that.game.score += 2;
+                                } else {
+                                    that.game.score ++;
+                                }
                                 helper.removeElement(currBullet, that.element);
                                 that.firedBulletsInSpace.splice(i, 1);
                                 console.log(isCollision, 1);
@@ -167,7 +171,9 @@ function Space(game) {
                 if (that.ship.isCollisionEnabled) {
                 var isCollision = that.checkCollision(ship, currAsteroid);
                 if (isCollision) {
-                    that.game.life--;
+                    if(that.game.life > 0) {
+                        that.game.life--;
+                    }
 //                    helper.removeElement(asteroid, element);
 //                    asteroidsInSpace.splice(i, 1);
                         that.ship.isCollisionEnabled = false;

@@ -7,6 +7,11 @@ function AsteroidGame() {
     this.life = 3;
     var lifePanel;
     var scoreBoard;
+    var startButton;
+    var restartButton;
+    var welComeScreen;
+    var gameOverPanel;
+
     var level = [2,3,4,5];
     var intervalId;
     var keys = {
@@ -105,121 +110,7 @@ function AsteroidGame() {
 //        intervalId = setInterval(gameloop, 20)
 
     };
-    var pause = function() {
-        clearInterval(intervalId);
-    };
-    var resume = function() {
-        intervalId = setInterval(gameloop,20);
-    };
-    var restart = function() {
-        that.score = 0;
-        that.life = 3;
-        for(var i = 0;i < space.asteroidsInSpace.length;i++) {
-            var asteroid = space.asteroidsInSpace[i];
-            if(asteroid) {
-                console.log('asteroid removal')
-                space.element.removeChild(asteroid.element);
-            }
-        }
-//        space.asteroidsInSpace = undefined;
-        for(var i = 0;i < space.firedBulletsInSpace.length;i++) {
-            var bullet = space.firedBulletsInSpace[i];
-            if(bullet) {
-                console.log('bullet removal')
-                space.element.removeChild(bullet.element);
-            }
-        }
-//        space.firedBulletsInSpace = undefined;
-//        spaceProperties.element = space.ship.element;
-//        space.ship.init(spaceProperties, helper);
-        clearInterval(intervalId);
-        that.welcomeScreen.style.display = 'none';
-        showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
-            space.ship.velocity);
-        intervalId = setInterval(gameloop,20);
-    };
 
-
-    var setWrapperProperties = function (width, height) {
-
-        gameWrapper.style.width = width;
-        gameWrapper.style.height = height;
-        gameWrapper.style.position = 'relative';
-        gameWrapper.style.margin = '0 auto';
-
-    };
-    var createWelcomeScreen = function() {
-        var welComeScreen;
-        welComeScreen = document.createElement('div');
-        welComeScreen.style.width = spaceProperties.width / 2 + 'px';
-        welComeScreen.style.height = spaceProperties.height / 2+ 'px';
-//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
-        welComeScreen.style.position = 'absolute';
-        welComeScreen.style.marginLeft = spaceProperties.width / 4 + 'px';
-        welComeScreen.style.marginTop = spaceProperties.height / 4 + 'px';
-//        welComeScreen.style.position = 'relative';
-//        welComeScreen.innerHTML = "click to start";
-//        welComeScreen.onclick = function() {
-//            intervalId = setInterval(gameloop,20);
-//            welComeScreen.style.display = 'none';
-//        };
-
-        var startButton;
-        startButton = document.createElement('button');
-        startButton.style.width = 100 + 'px';
-        startButton.style.height = 50 + 'px';
-//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
-//        startButton.style.position = 'absolute';
-        startButton.style.marginLeft = 200 + 'px';
-        startButton.style.marginTop = 50 + 'px';
-        startButton.innerHTML = "start";
-        startButton.onclick = function() {
-            intervalId = setInterval(gameloop,20);
-            welComeScreen.style.display = 'none';
-        };
-        welComeScreen.appendChild(startButton);
-
-        var restartButton;
-        restartButton = document.createElement('button');
-        restartButton.style.width = 100 + 'px';
-        restartButton.style.height = 50 + 'px';
-//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
-//        startButton.style.position = 'absolute';
-        restartButton.style.marginLeft = 200 + 'px';
-        restartButton.style.marginTop = 50 + 'px';
-        restartButton.innerHTML = "resstart";
-        restartButton.onclick = function() {
-            restart();
-            welComeScreen.style.display = 'none';
-        };
-
-        welComeScreen.appendChild(restartButton);
-        scoreBoard = document.createElement('div');
-        scoreBoard.style.width = spaceProperties.width / 8 + 'px';
-        scoreBoard.style.height = spaceProperties.height / 12 + 'px';
-//        scoreBoard.style.background = 'gray';//'url(images/' + images.space + ')';
-        scoreBoard.style.position = 'absolute';
-        scoreBoard.style.marginLeft = 20 + 'px';
-        scoreBoard.style.marginTop = 20 + 'px';
-        scoreBoard.innerHTML = 'score' + that.score;
-        scoreBoard.style.color = 'white';
-        space.element.appendChild(scoreBoard);
-
-        lifePanel = document.createElement('div');
-        lifePanel.style.width = spaceProperties.width / 8 + 'px';
-        lifePanel.style.height = spaceProperties.height / 12 + 'px';
-//        lifePanel.style.background = 'gray';//'url(images/' + images.space + ')';
-        lifePanel.style.position = 'absolute';
-        lifePanel.style.marginLeft = spaceProperties.width - (spaceProperties.width / 8  + 20) + 'px';
-        lifePanel.style.marginTop = 20 + 'px';
-        lifePanel.innerHTML = 'life' + that.life;
-        lifePanel.style.color = 'white';
-
-        space.element.appendChild(lifePanel);
-        space.element.appendChild(welComeScreen);
-        that.welcomeScreen = welComeScreen;
-
-    };
     var createSpace = function () {
         var spaceEl;
         spaceEl = document.createElement('div');
@@ -240,7 +131,12 @@ function AsteroidGame() {
 
         showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
                         space.ship.velocity);
-
+        if(that.life <= 0) {
+//            startButton.style.display = 'none';
+            gameOver();
+            welComeScreen.appendChild(restartButton);
+            that.welcomeScreen.style.display = 'block';
+        }
         if (asteroidGenerationDelayCounter % 50 == 0) {
 
             space.createAsteroid(asteroidProperties);
@@ -258,7 +154,6 @@ function AsteroidGame() {
             space.ship.moveForward();
         } else {
             space.getShipBackToSpace();
-
         }
 
         handleKeyPresses();
@@ -311,6 +206,8 @@ function AsteroidGame() {
         }
         if(pressedKeys.isPressed(keys.escape)) {
             that.welcomeScreen.style.display = 'block';
+            startButton.innerHTML = 'resume';
+            welComeScreen.appendChild(restartButton);
             pause();
             pressedKeys.removeKey(keys.escape);
         }
@@ -337,6 +234,146 @@ function AsteroidGame() {
             pressedKeys.addKey(keyPressed);
 
         }
+    };
+    var pause = function() {
+        clearInterval(intervalId);
+    };
+    var resume = function() {
+        intervalId = setInterval(gameloop,20);
+    };
+    var gameOver = function() {
+        welComeScreen.appendChild(gameOverPanel);
+        gameOverPanel.innerHTML = "game Over <br>Score: " + that.score;
+        restartButton.innerHTML = 'Play Again';
+        startButton.style.display = 'none';
+        for(var i = 0;i < space.asteroidsInSpace.length;i++) {
+            var asteroid = space.asteroidsInSpace[i];
+            if(asteroid) {
+                console.log('asteroid removal')
+                space.element.removeChild(asteroid.element);
+            }
+        }
+//        space.asteroidsInSpace = undefined;
+        for(var i = 0;i < space.firedBulletsInSpace.length;i++) {
+            var bullet = space.firedBulletsInSpace[i];
+            if(bullet) {
+                console.log('bullet removal')
+                space.element.removeChild(bullet.element);
+            }
+        }
+        clearInterval(intervalId);
+    };
+    var restart = function() {
+        that.score = 0;
+        that.life = 3;
+        for(var i = 0;i < space.asteroidsInSpace.length;i++) {
+            var asteroid = space.asteroidsInSpace[i];
+            if(asteroid) {
+                console.log('asteroid removal')
+                space.element.removeChild(asteroid.element);
+            }
+        }
+//        space.asteroidsInSpace = undefined;
+        for(var i = 0;i < space.firedBulletsInSpace.length;i++) {
+            var bullet = space.firedBulletsInSpace[i];
+            if(bullet) {
+                console.log('bullet removal')
+                space.element.removeChild(bullet.element);
+            }
+        }
+//        space.firedBulletsInSpace = undefined;
+//        spaceProperties.element = space.ship.element;
+//        space.ship.init(spaceProperties, helper);
+        clearInterval(intervalId);
+        that.welcomeScreen.style.display = 'none';
+        showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
+            space.ship.velocity);
+        intervalId = setInterval(gameloop,20);
+    };
+
+
+    var setWrapperProperties = function (width, height) {
+
+        gameWrapper.style.width = width;
+        gameWrapper.style.height = height;
+        gameWrapper.style.position = 'relative';
+        gameWrapper.style.margin = '0 auto';
+
+    };
+    var createWelcomeScreen = function() {
+
+        welComeScreen = document.createElement('div');
+        welComeScreen.style.width = spaceProperties.width / 2 + 'px';
+        welComeScreen.style.height = spaceProperties.height / 2+ 'px';
+        welComeScreen.style.position = 'absolute';
+        welComeScreen.style.marginLeft = spaceProperties.width / 4 + 'px';
+        welComeScreen.style.marginTop = spaceProperties.height / 4 + 'px';
+
+
+
+        startButton = document.createElement('button');
+        startButton.style.width = 100 + 'px';
+        startButton.style.height = 50 + 'px';
+//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
+//        startButton.style.position = 'absolute';
+        startButton.style.marginLeft = 200 + 'px';
+        startButton.style.marginTop = 50 + 'px';
+        startButton.innerHTML = "start";
+        startButton.onclick = function() {
+            intervalId = setInterval(gameloop,20);
+            welComeScreen.style.display = 'none';
+        };
+        welComeScreen.appendChild(startButton);
+
+        restartButton = document.createElement('button');
+        restartButton.style.width = 100 + 'px';
+        restartButton.style.height = 50 + 'px';
+//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
+//        startButton.style.position = 'absolute';
+        restartButton.style.marginLeft = 200 + 'px';
+        restartButton.style.marginTop = 50 + 'px';
+        restartButton.innerHTML = "restart";
+        restartButton.onclick = function() {
+            restart();
+            welComeScreen.style.display = 'none';
+        };
+
+
+        scoreBoard = document.createElement('div');
+        scoreBoard.style.width = spaceProperties.width / 8 + 'px';
+        scoreBoard.style.height = spaceProperties.height / 12 + 'px';
+//        scoreBoard.style.background = 'gray';//'url(images/' + images.space + ')';
+        scoreBoard.style.position = 'absolute';
+        scoreBoard.style.marginLeft = 20 + 'px';
+        scoreBoard.style.marginTop = 20 + 'px';
+        scoreBoard.innerHTML = 'score' + that.score;
+        scoreBoard.style.color = 'white';
+        space.element.appendChild(scoreBoard);
+
+        lifePanel = document.createElement('div');
+        lifePanel.style.width = spaceProperties.width / 8 + 'px';
+        lifePanel.style.height = spaceProperties.height / 12 + 'px';
+//        lifePanel.style.background = 'gray';//'url(images/' + images.space + ')';
+        lifePanel.style.position = 'absolute';
+        lifePanel.style.marginLeft = spaceProperties.width - (spaceProperties.width / 8  + 20) + 'px';
+        lifePanel.style.marginTop = 20 + 'px';
+        lifePanel.innerHTML = 'life' + that.life;
+        lifePanel.style.color = 'white';
+
+        gameOverPanel = document.createElement('div');
+        gameOverPanel.style.width = 100 + 'px';
+        gameOverPanel.style.height = 50 + 'px';
+        gameOverPanel.style.position = 'absolute';
+//        gameOverPanel.style.background = 'gray';
+        gameOverPanel.style.textAlign = 'center';
+        gameOverPanel.style.color = 'white';
+        gameOverPanel.style.top = '10px';
+        gameOverPanel.style.left = '200px';
+
+        space.element.appendChild(lifePanel);
+        space.element.appendChild(welComeScreen);
+        that.welcomeScreen = welComeScreen;
+
     };
 
 }
