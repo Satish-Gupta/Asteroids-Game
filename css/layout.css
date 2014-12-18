@@ -2,12 +2,12 @@
 /* CSS Document */
 
 .main-wrapper {
-    width: 900px;
-    height: 600px;
+    width: 990px;
+    height: 550px;
     background: red;
     margin: 0 auto;
     overflow: hidden;
-    float: left;
+    /*float: left;*/
 }
 .debug-info {
     width: 100px;

@@ -1,7 +1,7 @@
  'use strict';
 
 function AsteroidGame() {
-
+    var debug = false;
     var gameWrapper;
     this.score = 0;
     this.life = 3;
@@ -105,7 +105,8 @@ function AsteroidGame() {
 
         gameWrapper = mainWrapper;
         setWrapperProperties(wrapperWidth, wrapperHeight);
-
+        spaceProperties.width = wrapperWidth;
+        spaceProperties.height = wrapperHeight;
         helper = new Helper();
 
         createSpace();
@@ -395,7 +396,7 @@ var gameWrapper = document.createElement('div');
 mainWrapper[0].appendChild(gameWrapper);
 
 var game = new AsteroidGame();
-game.init(gameWrapper, 900, 600);
+game.init(gameWrapper, 1000, 600);
 setInterval(function() {
     console.log(counter);
     fps = counter;
