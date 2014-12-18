@@ -12,7 +12,16 @@ function AsteroidGame() {
     var welComeScreen;
     var gameOverPanel;
 
-    var level = [2,3,4,5];
+    // for increasing number of asteroids at levelUpInterval
+    var levelData1 = [0,0,10,15,20];
+    // for increasing speed of asteroids
+    var levelData2 = [2,2,2,3,3]
+    var currentLevel = 0;
+    var levelUpInterval = 1000;
+
+    var asteroidGenerationDelayCounter = 0;
+    var asteroidGenerationDelay = 50;
+
     var intervalId;
     var keys = {
         left: 37,
@@ -57,11 +66,10 @@ function AsteroidGame() {
         height: '60',
         deltaAngle: 0.5,
         posCenter: [],
-        // should be more that 1 to have a change in position since it will be multiplied by unit vector
         movementStep: 2,
         image: images.asteroid
     };
-    var asteroidGenerationDelayCounter = 0;
+
     var helper;             // to hold the helper class instance
     var that = this;
 
@@ -102,8 +110,9 @@ function AsteroidGame() {
 
         createSpace();
         space.createShip(shipProperties, images);
-        space.ship.showShipInfo();
+
         createWelcomeScreen();
+
         // register Event listeners
         document.addEventListener('keydown', keydownEventHandler);
         document.addEventListener('keyup', keyupEventHandler);
@@ -126,30 +135,41 @@ function AsteroidGame() {
 
     var gameloop = function () {
         counter++;
-        scoreBoard.innerHTML = 'score: ' + that.score;
-        lifePanel.innerHTML = 'life: ' + that.life;
 
-        showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
-                        space.ship.velocity);
+        lifePanel.innerHTML = 'life: ' + that.life;
+        scoreBoard.innerHTML = 'score: ' + that.score + "<br>Level:" + currentLevel;
+
+        if(debug) {
+            showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship, space.ship.width / 2),
+                space.ship.velocity);
+        }
+
         if(that.life <= 0) {
 //            startButton.style.display = 'none';
             gameOver();
             welComeScreen.appendChild(restartButton);
             that.welcomeScreen.style.display = 'block';
         }
-        if (asteroidGenerationDelayCounter % 50 == 0) {
+
+        // change the level after certain interval
+        if( asteroidGenerationDelayCounter % levelUpInterval == 0) {
+
+            currentLevel++;
+            asteroidProperties.movementStep = levelData2[currentLevel];
+        }
+
+
+
+        //create asteroid in regular intervals
+        if (asteroidGenerationDelayCounter % (asteroidGenerationDelay - levelData1[currentLevel]) == 0) {
 
             space.createAsteroid(asteroidProperties);
-            asteroidGenerationDelayCounter %= 1000;
+            asteroidGenerationDelayCounter %= 5000;
 
         }
 
-        asteroidProperties.movementStep = level[1];
-//        if(asteroidGenerationDelayCounter % 10 == 0) {
-//            asteroidProperties.movementStep += 0.1;
-//        }
-
         asteroidGenerationDelayCounter++;
+
         if(space.isObjectInSpace(space.ship, 0)) {
             space.ship.moveForward();
         } else {
@@ -177,24 +197,23 @@ function AsteroidGame() {
             if(space.ship.velocity < 10) {
                 space.ship.velocity += 0.2;
             }
-//            if(space.isObjectInSpace(space.ship, 0)) {
-//                space.ship.moveForward();
-//            } else {
-//                space.getShipBackToSpace();
-//            }
         }
 
         if (pressedKeys.isPressed(keys.space)) {
+
             if(space.ship.isFiringEnabled) {
+
                 space.ship.isFiringEnabled = false;
+
                 setTimeout(function() {
                     space.ship.isFiringEnabled = true;
                 },200);
+
                 var bullet = new Bullet();
                 space.ship.fireBullet(bullet, bulletProperties);
+
                 space.firedBulletsInSpace.push(bullet);
-//            console.log('space pressed',pressedKeys.pressedKeyCodes);
-                console.log(space.element);
+
                 helper.createAndAppendElement(bullet, space.element, images.bullet);
                 helper.placeElement(bullet);
 
@@ -204,6 +223,7 @@ function AsteroidGame() {
             }
             pressedKeys.removeKey(keys.space);
         }
+
         if(pressedKeys.isPressed(keys.escape)) {
             that.welcomeScreen.style.display = 'block';
             startButton.innerHTML = 'resume';
@@ -253,7 +273,7 @@ function AsteroidGame() {
                 space.element.removeChild(asteroid.element);
             }
         }
-//        space.asteroidsInSpace = undefined;
+
         for(var i = 0;i < space.firedBulletsInSpace.length;i++) {
             var bullet = space.firedBulletsInSpace[i];
             if(bullet) {
@@ -273,7 +293,7 @@ function AsteroidGame() {
                 space.element.removeChild(asteroid.element);
             }
         }
-//        space.asteroidsInSpace = undefined;
+
         for(var i = 0;i < space.firedBulletsInSpace.length;i++) {
             var bullet = space.firedBulletsInSpace[i];
             if(bullet) {
@@ -281,9 +301,6 @@ function AsteroidGame() {
                 space.element.removeChild(bullet.element);
             }
         }
-//        space.firedBulletsInSpace = undefined;
-//        spaceProperties.element = space.ship.element;
-//        space.ship.init(spaceProperties, helper);
         clearInterval(intervalId);
         that.welcomeScreen.style.display = 'none';
         showDebugInfo(that, space.ship, space.asteroidsInSpace, space.firedBulletsInSpace, space.isObjectInSpace(space.ship,space.ship.width/2),
@@ -314,11 +331,10 @@ function AsteroidGame() {
         startButton = document.createElement('button');
         startButton.style.width = 100 + 'px';
         startButton.style.height = 50 + 'px';
-//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
-//        startButton.style.position = 'absolute';
         startButton.style.marginLeft = 200 + 'px';
         startButton.style.marginTop = 50 + 'px';
         startButton.innerHTML = "start";
+
         startButton.onclick = function() {
             intervalId = setInterval(gameloop,20);
             welComeScreen.style.display = 'none';
@@ -328,8 +344,6 @@ function AsteroidGame() {
         restartButton = document.createElement('button');
         restartButton.style.width = 100 + 'px';
         restartButton.style.height = 50 + 'px';
-//        welComeScreen.style.background = 'blue';//'url(images/' + images.space + ')';
-//        startButton.style.position = 'absolute';
         restartButton.style.marginLeft = 200 + 'px';
         restartButton.style.marginTop = 50 + 'px';
         restartButton.innerHTML = "restart";
@@ -340,20 +354,19 @@ function AsteroidGame() {
 
 
         scoreBoard = document.createElement('div');
-        scoreBoard.style.width = spaceProperties.width / 8 + 'px';
+        scoreBoard.style.width = spaceProperties.width / 7 + 'px';
         scoreBoard.style.height = spaceProperties.height / 12 + 'px';
 //        scoreBoard.style.background = 'gray';//'url(images/' + images.space + ')';
         scoreBoard.style.position = 'absolute';
         scoreBoard.style.marginLeft = 20 + 'px';
         scoreBoard.style.marginTop = 20 + 'px';
-        scoreBoard.innerHTML = 'score' + that.score;
+        scoreBoard.innerHTML = 'score' + that.score + '<br>Level' + currentLevel;
         scoreBoard.style.color = 'white';
         space.element.appendChild(scoreBoard);
 
         lifePanel = document.createElement('div');
         lifePanel.style.width = spaceProperties.width / 8 + 'px';
         lifePanel.style.height = spaceProperties.height / 12 + 'px';
-//        lifePanel.style.background = 'gray';//'url(images/' + images.space + ')';
         lifePanel.style.position = 'absolute';
         lifePanel.style.marginLeft = spaceProperties.width - (spaceProperties.width / 8  + 20) + 'px';
         lifePanel.style.marginTop = 20 + 'px';
@@ -364,7 +377,6 @@ function AsteroidGame() {
         gameOverPanel.style.width = 100 + 'px';
         gameOverPanel.style.height = 50 + 'px';
         gameOverPanel.style.position = 'absolute';
-//        gameOverPanel.style.background = 'gray';
         gameOverPanel.style.textAlign = 'center';
         gameOverPanel.style.color = 'white';
         gameOverPanel.style.top = '10px';
